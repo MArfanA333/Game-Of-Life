@@ -1,0 +1,301 @@
+package guiWindow;
+
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Random;
+
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+
+public class GridPanel extends JPanel {
+	// Variables:
+	private int height;
+	private int width;
+	private int gridSize = 50;
+	private int gridSizeHor;
+	private int boxSize;
+	public boolean[][] grid = new boolean[300][300];
+	private int paddingLeft;
+	private int paddingTop;
+	private int centerX = 150;
+	private int centerY = 150;
+	private int offsetX, offsetY;
+	private String shape = "Clear";
+	private boolean editMode = false;
+	private Color[] colorScheme = { Color.DARK_GRAY, Color.white, Color.red, Color.orange, Color.green, Color.yellow };
+
+	// Constructor:
+	public GridPanel() {
+		for (int i = 0; i < 100; i++) {
+			for (int j = 0; j < 100; j++) {
+				this.grid[i][j] = false;
+			}
+		}
+		for (int i = 20; i < 40; i++) {
+			for (int j = 20; j < 40; j++) {
+				this.grid[i][j] = true;
+			}
+		}
+
+		for (int i = 60; i < 80; i++) {
+			for (int j = 70; j < 90; j++) {
+				this.grid[i][j] = true;
+			}
+		}
+		grid[50][50] = true;
+		grid[51][50] = true;
+		grid[50][51] = true;
+
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				offsetX = e.getX();
+				offsetY = e.getY();
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + (boxSize * gridSizeHor))
+							&& offsetY <= boxSize * gridSize && offsetY>=paddingTop && !editMode) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					}
+					else {
+						checkAndEdit(offsetY, offsetX);
+					}
+
+				}
+				
+
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				setCursor(Cursor.getDefaultCursor());
+			}
+		});
+
+		addMouseMotionListener(new MouseAdapter() {
+			@Override
+			public void mouseDragged(MouseEvent e) {
+
+				int dx = e.getX() - offsetX;
+				int dy = e.getY() - offsetY;
+
+				// Adjust the grid position
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + boxSize * gridSizeHor)
+							&& offsetY <= boxSize * gridSize && offsetY>=paddingTop && !editMode) {
+						centerY -= (dx / (boxSize * 3));
+						centerX -= (dy / (boxSize * 3));
+						if (Math.abs((dx / (boxSize * 3))) > 3 | Math.abs((dy / (boxSize * 3))) > 3) {
+							offsetX = e.getX();
+							offsetY = e.getY();
+						}
+					}
+				}
+				repaint();
+			}
+		});
+	}
+
+	// PaintComponent Override:
+	@Override
+	public void paintComponent(Graphics g) {
+		Graphics2D g2d = (Graphics2D) g;
+
+		// Clearing Screen:
+		g2d.setColor(colorScheme[0]);
+		g2d.fillRect(0, 0, getWidth(), getHeight());
+
+		g2d.setColor(colorScheme[1]);
+		this.height = getHeight();
+		this.width = getWidth();
+		boxSize = Math.min(width / gridSize, height / gridSize);
+		paddingTop = (height - (boxSize * gridSize)) / 2;
+		int x = paddingLeft;
+		int y = paddingTop;
+		gridSizeHor = (width-20) / boxSize;
+		paddingLeft = (width - (boxSize * gridSizeHor)) / 2;
+
+//        try {
+		int startRow = centerX - (gridSize / 2);
+		int endRow = centerX + (gridSize / 2);
+		int startCol = centerY - (gridSizeHor / 2);
+		int endCol = centerY + (gridSizeHor / 2);
+
+		for (int i = startRow; i < endRow; i++) {
+			for (int j = startCol; j < endCol; j++) {
+//                	g2d.drawString(Integer.toString(i) + "," + Integer.toString(j), x + 10, y + 10);
+				// Drawing live cells:
+
+				// Infinite Grid:
+				int infI = i, infJ = j;
+
+				while (infI > 299)
+					infI -= 299;
+				while (infI < 0)
+					infI = 299 + infI;
+				while (infJ > 299)
+					infJ -= 299;
+				while (infJ < 0)
+					infJ = 299 + infJ;
+
+				int count = liveCellsSurr(infI, infJ);
+				if (grid[infI][infJ]) {
+
+					if (count == 2 | count == 3)
+						g2d.setColor(colorScheme[5]);
+					else if (count < 2)
+						g2d.setColor(colorScheme[2]);
+					else if (count > 3)
+						g2d.setColor(colorScheme[3]);
+					g2d.fillRect(x, y, boxSize, boxSize);
+
+				} else {
+					if (count == 3) {
+						g2d.setColor(colorScheme[4]);
+						g2d.fillRect(x, y, boxSize, boxSize);
+					}
+				}
+
+				g2d.setColor(colorScheme[1]);
+				// Drawing dead cells:
+				g2d.drawRect(x, y, boxSize, boxSize);
+
+				x += boxSize;
+			}
+			x = paddingLeft;
+			y += boxSize;
+		}
+//        }catch(Exception e) {
+//        	System.out.println(e);
+//        }
+
+	}
+
+	// Methods:
+	public void setEditMode(boolean state) {
+		this.editMode = state;
+	}
+
+	public void setGridSize(int size) {
+		this.gridSize = size;
+		repaint();
+	}
+
+	public void nextGen() {
+		boolean[][] newGrid = new boolean[300][300];
+
+		for (int i = 0; i < 300; i++) {
+			for (int j = 0; j < 300; j++) {
+				int surrLiveCells = this.liveCellsSurr(i, j);
+				if (surrLiveCells <= 1)
+					newGrid[i][j] = false;
+				else if (surrLiveCells >= 4 && surrLiveCells <= 8)
+					newGrid[i][j] = false;
+				else if ((surrLiveCells == 2 | surrLiveCells == 3) && grid[i][j])
+					newGrid[i][j] = true;
+				else if (surrLiveCells == 3 && !grid[i][j])
+					newGrid[i][j] = true;
+				else
+					newGrid[i][j] = false;
+			}
+		}
+
+		this.grid = newGrid;
+		repaint();
+	}
+
+	public int liveCellsSurr(int i, int j) {
+		int count = 0;
+		int infI = i, infJ = j;
+
+		while (infI > 299)
+			infI -= 299;
+		while (infI < 0)
+			infI = 299 + infI;
+		while (infJ > 299)
+			infJ -= 299;
+		while (infJ < 0)
+			infJ = 299 + infJ;
+
+		if (infI - 1 >= 0 && infJ - 1 >= 0)
+			if (grid[infI - 1][infJ - 1])
+				count++;
+		if (infI - 1 >= 0)
+			if (grid[infI - 1][infJ])
+				count++;
+		if (infI - 1 >= 0 && infJ + 1 <= 299)
+			if (grid[infI - 1][infJ + 1])
+				count++;
+
+		if (infJ - 1 >= 0)
+			if (grid[infI][infJ - 1])
+				count++;
+		if (infJ + 1 <= 299)
+			if (grid[infI][infJ + 1])
+				count++;
+
+		if (infI + 1 <= 299 && infJ - 1 >= 0)
+			if (grid[infI + 1][infJ - 1])
+				count++;
+		if (infI + 1 <= 299)
+			if (grid[infI + 1][infJ])
+				count++;
+		if (infI + 1 <= 299 && infJ + 1 <= 299)
+			if (grid[infI + 1][infJ + 1])
+				count++;
+
+		return count;
+	}
+
+	public void setColor(Color[] colors) {
+		this.colorScheme = colors;
+		repaint();
+	}
+	
+	public void checkAndEdit(int x,int y) {
+		int i,j;
+		i=(x-paddingTop)/boxSize;
+		j=(y-paddingLeft)/boxSize;
+		int startRow = centerX - (gridSize / 2);
+		int endRow = centerX + (gridSize / 2);
+		int startCol = centerY - (gridSizeHor / 2);
+		int endCol = centerY + (gridSizeHor / 2);
+		
+		int infI = i+startRow, infJ = j+startCol;
+		while (infI > 299)
+			infI -= 299;
+		while (infI < 0)
+			infI = 299 + infI;
+		while (infJ > 299)
+			infJ -= 299;
+		while (infJ < 0)
+			infJ = 299 + infJ;
+		
+		if(grid[infI][infJ]) 
+			grid[infI][infJ] = false;
+		else grid[infI][infJ] = true;
+		
+		repaint();
+	}
+	
+	public void randomizeCells() {
+		Random random = new Random();
+        int randomNumber;
+        
+        for (int i = 0; i < 300; i++) {
+			for (int j = 0; j < 300; j++) {
+				randomNumber = random.nextInt(2);
+				if (randomNumber<=0.5)grid[i][j]=!grid[i][j];
+			}
+		}
+        repaint();
+	}
+
+}

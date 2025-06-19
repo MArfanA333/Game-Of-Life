@@ -1,0 +1,132 @@
+package guiWindow;
+
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Hashtable;
+
+import javax.swing.*;
+import javax.swing.event.ChangeListener;
+
+class ControlsPanel extends JPanel {
+    // Variables for controls:
+    private JCheckBox editCheckBox;
+    private JButton nextButton;
+    private JButton randomizeButton;
+    private JSlider sizeSlider;
+    private JButton startButton;
+    private JSlider speedSlider;
+    private JComboBox<String> shapeDropDown;
+    private JLabel genLabel;
+    public int generations;
+    private JToggleButton modeswitch;
+
+    // Constructor:
+    public ControlsPanel() {
+    	generations = 0;
+    	
+        editCheckBox = new JCheckBox("Edit");
+        nextButton = new JButton("Next");
+        randomizeButton = new JButton("Randomize Cells");
+        sizeSlider = new JSlider();
+        startButton = new JButton("Start");
+        speedSlider = new JSlider();
+        String[] options = {"Clear", "Block", "Blinker","Beacon", "Boat", "Beehive", "Glider", "Pond", "Ship", "Toad", "Tub","Barge","Long Boat", "Loaf","Mango","Long Barge","Half-Fleet","Half-Bakery"};
+        shapeDropDown = new JComboBox<>(options);
+        modeswitch = new JToggleButton("Light Mode");
+        genLabel = new JLabel("Generation: " + generations);
+      
+        // Modify sizeSlider
+        sizeSlider.setPaintLabels(true);
+        sizeSlider.setPaintTicks(true);
+        sizeSlider.setMajorTickSpacing(50);
+        sizeSlider.setMinorTickSpacing(5);
+        Hashtable<Integer, JLabel> genLabelTable = new Hashtable<>();
+        genLabelTable.put(0, new JLabel("Small"));
+        genLabelTable.put(50, new JLabel("Medium"));
+        genLabelTable.put(100, new JLabel("Large"));
+        sizeSlider.setLabelTable(genLabelTable);
+        
+        // Modify speedSlider
+        speedSlider.setPaintLabels(true);
+        speedSlider.setPaintTicks(true);
+        speedSlider.setMajorTickSpacing(50);
+        speedSlider.setMinorTickSpacing(5);
+        Hashtable<Integer, JLabel> genLabelTable1 = new Hashtable<>();
+        genLabelTable1.put(0, new JLabel("Slow"));
+        genLabelTable1.put(50, new JLabel("Medium"));
+        genLabelTable1.put(100, new JLabel("Fast"));
+        speedSlider.setLabelTable(genLabelTable1);
+        
+        
+        // Add controls to the panel:
+        add(editCheckBox);
+        add(nextButton);
+        add(randomizeButton);
+        add(sizeSlider);
+        add(startButton);
+        add(speedSlider); 
+        add(shapeDropDown);
+        add(modeswitch);
+        add(genLabel);
+    }
+    
+    //Methods:
+    public JToggleButton getModeToggle() {
+    	return modeswitch;
+    }
+    
+    public JCheckBox getEditBox() {
+    	return editCheckBox;
+    }
+    
+    public JButton getStartButton() {
+    	return startButton;
+    }
+    
+    public JButton getNextButton() {
+    	return nextButton;
+    }
+    
+    public int getSizeSliderVal() {
+    	return sizeSlider.getValue();
+    }
+    
+    public int getSpeedSliderVal() {
+    	return speedSlider.getValue();
+    }
+    
+    public JSlider getSpeedSlider() {
+    	return speedSlider;
+    }
+    
+    public void updateGenLabel() {
+    	genLabel.setText("Generation: " + generations);
+    }
+    
+    public void addRandomizeListener(ActionListener aL) {
+    	randomizeButton.addActionListener(aL);
+    }
+    
+    public void addEditCheckListener(ActionListener aL) {
+    	editCheckBox.addActionListener(aL);
+    }
+    public void addModeToggleListener(ActionListener aL) {
+    	modeswitch.addActionListener(aL);
+    }
+    
+    public void addNextListener(ActionListener aL) {
+    	nextButton.addActionListener(aL);
+    }
+    public void addSizeSlideListener(ChangeListener aL) {
+    	sizeSlider.addChangeListener(aL);;
+    }
+    public void addStartListener(ActionListener aL) {
+    	startButton.addActionListener(aL);
+    }
+    public void addSpeedSlideListener(ChangeListener aL) {
+    	speedSlider.addChangeListener(aL);
+    }
+    public void addShapeComboListener(ActionListener aL) {
+    	shapeDropDown.addActionListener(aL);
+    }
+}

@@ -1,0 +1,554 @@
+package guiWindow;
+
+import java.awt.Color;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.util.Random;
+
+import javax.swing.BorderFactory;
+import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+import javax.swing.Timer;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
+
+public class GridPanel extends JPanel {
+	// Variables:
+	private int height;
+	private int width;
+	private int gridSize = 50;
+	private int gridSizeHor;
+	private int boxSize;
+	public boolean[][] grid = new boolean[300][300];
+	private int paddingLeft;
+	private int paddingTop;
+	private int centerX = 150;
+	private int centerY = 150;
+	private int offsetX, offsetY;
+	private String shape = "Clear";
+	private boolean editMode = false;
+	private Color[] colorScheme = { Color.DARK_GRAY, Color.white, Color.red, Color.orange, Color.green, Color.yellow };
+	private RightClickMouseListener rightClick;
+	private int centerXb=0;
+	private int centerYb=0;
+	//private Border border = new EmptyBorder(10,10,10,10);
+	// Constructor:
+	public GridPanel() {
+		
+		drawGrid(); 
+		
+		addMouseListener(new MouseAdapter() {
+//			@Override
+//			public void mousePressed(MouseEvent e) {
+//				offsetX = e.getX();
+//				offsetY = e.getY();
+//				if (SwingUtilities.isLeftMouseButton(e)) {
+//					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + (boxSize * gridSizeHor))
+//							&& offsetY <= boxSize * gridSize && offsetY>=paddingTop && !editMode) {
+//						setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+//					}
+//					else {
+//						checkAndEdit(offsetY, offsetX);
+//					}
+//
+//				}
+//				
+//
+//			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				setCursor(Cursor.getDefaultCursor());
+			}
+		
+				
+				
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				offsetX = e.getX();
+				offsetY = e.getY();
+				if (e.getButton()==MouseEvent.BUTTON1) {
+					if (rightClick.getRightClickVisible()){
+						rightClick.closeRightClickMenu();
+						return;
+					}
+					
+					
+				}
+				
+				if  (e.getButton()==MouseEvent.BUTTON3) {
+					offsetX = e.getX();
+					offsetY = e.getY()+70;
+					rightClick.showRightClickMenu(e.getComponent(), offsetX, offsetY);
+				}
+		    	     
+			}
+
+		});
+
+		addMouseMotionListener(new MouseAdapter() {
+			/*@Override 
+			public void mouseMoved(MouseEvent e) {
+				offsetX = e.getX();
+				offsetY = e.getY();
+				if (editMode) {
+					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + (boxSize * gridSize))
+				
+						&& offsetY <= boxSize * gridSize) {
+					setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+				}
+			}
+				else setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}*/
+			
+			@Override
+			public void mouseDragged(MouseEvent e) {
+
+				int dx = e.getX() - offsetX;
+				int dy = e.getY() - offsetY;
+
+				// Adjust the grid position
+				if (e.getButton() == MouseEvent.BUTTON1) {
+					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + (boxSize * gridSize))
+							
+							&& offsetY <= boxSize * gridSize) {
+						setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+					}
+					if (offsetX >= paddingLeft && offsetX <= (paddingLeft + boxSize * gridSizeHor)
+							&& offsetY <= boxSize * gridSize && offsetY>=paddingTop && !editMode) {
+						centerY -= (dx / (boxSize * 3));
+						centerX -= (dy / (boxSize * 3));
+						//resetCenter(centerX,centerY);
+						if (Math.abs((dx / (boxSize * 3))) > 3 | Math.abs((dy / (boxSize * 3))) > 3) {
+							offsetX = e.getX();
+							offsetY = e.getY();
+						}
+					}
+				}
+				repaint();
+			}
+		});
+		
+		
+	}
+	
+	
+public void drawGrid() {
+		
+	
+		if (shape.equals("Clear")) clearGrid();
+		
+		if (shape.equals("Block")) {
+			
+			grid[centerX][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+		}
+		
+		else if (shape.equals("Blinker")) {
+			grid[centerX][centerY]=true;
+			grid[centerX][centerY-1]=true;
+			grid[centerX][centerY+1]=true;
+		}
+		
+		else if (shape.equals("Beacon")) {
+			grid[centerX][centerY-2]=true;
+			grid[centerX][centerY-1]=true;
+			grid[centerX+1][centerY-2]=true;
+			grid[centerX+2][centerY+1]=true;
+			grid[centerX+3][centerY+1]=true;
+			grid[centerX+3][centerY]=true;
+			
+			
+		}
+		
+		else if (shape.equals("Boat")) {
+			grid[centerX][centerY-1]=true;
+			grid[centerX-1][centerY-1]=true;
+			grid[centerX-1][centerY]=true;
+			grid[centerX][centerY+1]=true;
+			grid[centerX+1][centerY]=true;
+		}
+		
+		else if (shape.equals("Beehive")) {
+			grid[centerX][centerY+1]=true;
+			grid[centerX][centerY-2]=true;
+			grid[centerX-1][centerY]=true;
+			grid[centerX-1][centerY-1]=true;
+			grid[centerX+1][centerY]=true;
+			grid[centerX+1][centerY-1]=true;
+		}
+		
+		else if (shape.equals("Glider")) {
+			grid[centerX-1][centerY]=true;
+			grid[centerX-1][centerY-1]=true;
+			grid[centerX-1][centerY+1]=true;
+			grid[centerX][centerY-1]=true;
+			grid[centerX+1][centerY]=true;
+		}
+		
+		else if (shape.equals("Pond")) {
+			grid[centerX][centerY-1] = true;
+			grid[centerX+1][centerY-1] = true;
+			grid[centerX][centerY+2] = true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX-1][centerY] = true;
+			grid[centerX-1][centerY+1] = true;
+			grid[centerX+2][centerY] = true;
+			grid[centerX+2][centerY+1] = true;
+			
+		}
+		
+		else if (shape.equals("Ship")) {
+			grid[centerX-1][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX+1][centerY+1] = true;
+			grid[centerX-1][centerY-1] = true;
+		}
+		
+		else if (shape.equals("Toad")) {
+			grid[centerX][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX+1][centerY+1] = true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX][centerY-1] = true;
+		}
+		
+		else if (shape.equals("Tub")) {
+			grid[centerX-1][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX][centerY-1] = true;
+		}
+		
+		else if (shape.equals("Barge")) {
+			grid[centerX-1][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX+2][centerY+1] = true;
+			
+		}
+		
+		else if (shape.equals("Long Boat")) {
+			grid[centerX][centerY-1]=true;
+			grid[centerX-1][centerY-1]=true;
+			grid[centerX-1][centerY]=true;
+			grid[centerX][centerY+1]=true;
+			grid[centerX+1][centerY]=true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX+2][centerY+1] = true;
+			
+		}
+		
+		else if (shape.equals("Loaf")) {
+			grid[centerX+1][centerY+1] = true;
+			grid[centerX-1][centerY+1] = true;
+			grid[centerX-1][centerY] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX+1][centerY-1] = true;
+			grid[centerX][centerY+2] = true;
+			grid[centerX+2][centerY] = true;
+		}
+		
+		
+		else if (shape.equals("Mango")) {
+			grid[centerX+1][centerY] = true;
+			grid[centerX-1][centerY] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX-1][centerY+1] = true;
+			grid[centerX][centerY+2] = true;
+			grid[centerX+1][centerY+3] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX+2][centerY+2] = true;
+			grid[centerX+2][centerY+1] = true;
+		}
+		
+		else if (shape.equals("Long Barge")) {
+			grid[centerX-1][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX-1][centerY-2] = true;
+			grid[centerX-2][centerY-1] = true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX+2][centerY+1] = true;
+		}
+		
+		else if (shape.equals("Half-Fleet")) {
+			grid[centerX][centerY] = true;
+			grid[centerX][centerY-1] = true;
+			grid[centerX-1][centerY] = true;
+			grid[centerX-2][centerY-1] = true;
+			grid[centerX-1][centerY-2] = true;
+			grid[centerX-2][centerY-2] = true;
+			
+			grid[centerX+1][centerY+1] = true;
+			grid[centerX+1][centerY+2] = true;
+			grid[centerX+2][centerY+1] = true;
+			grid[centerX+2][centerY+3] = true;
+			grid[centerX+3][centerY+2] = true;
+			grid[centerX+3][centerY+3] = true;
+			
+		}
+		
+		else if (shape.equals("Half-Bakery")) {
+			grid[centerX-1][centerY] = true;
+			grid[centerX+1][centerY] = true;
+			grid[centerX][centerY+1] = true;
+			grid[centerX][centerY-1] = true;
+			
+			grid[centerX-2][centerY] = true;
+			grid[centerX-3][centerY-1] = true;
+			grid[centerX-3][centerY-2] = true;
+			grid[centerX-2][centerY-3] = true;
+			grid[centerX-1][centerY-2] = true;
+			
+			grid[centerX+2][centerY+1] = true;
+			grid[centerX][centerY+2] = true;
+			grid[centerX+1][centerY+3] = true;
+			grid[centerX+2][centerY+3] = true;
+			grid[centerX+3][centerY+2] = true;
+			
+			
+		}
+		
+		repaint();
+	}
+
+
+private void clearGrid() {
+	grid=new boolean[300][300];
+	
+	
+}
+	// PaintComponent Override:
+	@Override
+	public void paintComponent(Graphics g) {
+		
+		Graphics2D g2d = (Graphics2D) g;
+
+		// Clearing Screen:
+		g2d.setColor(colorScheme[0]);
+		g2d.fillRect(0, 0, getWidth(), getHeight());
+
+		g2d.setColor(colorScheme[1]);
+		this.height = getHeight();
+		this.width = getWidth();
+		boxSize = Math.min(width / gridSize, height / gridSize);
+		paddingTop = (height - (boxSize * gridSize)) / 2;
+
+		int x = paddingLeft;
+		int y = paddingTop;
+		gridSizeHor = (width-10) / boxSize;
+		paddingLeft = (width - (boxSize * gridSizeHor)) / 2;
+		
+		setBorder(BorderFactory.createEmptyBorder(height, paddingLeft, height, paddingLeft));
+		
+//        try {
+		int startRow = centerX - (gridSize / 2);
+		int endRow = centerX + (gridSize / 2);
+		int startCol = centerY - (gridSizeHor / 2);
+		int endCol = centerY + (gridSizeHor / 2);
+		
+		//resetCenter((startRow+endRow)/2,(startCol+endCol)/2);
+
+		for (int i = startRow; i < endRow; i++) {
+			for (int j = startCol; j < endCol; j++) {
+//                	g2d.drawString(Integer.toString(i) + "," + Integer.toString(j), x + 10, y + 10);
+				// Drawing live cells:
+
+				// Infinite Grid:
+				int infI = i, infJ = j;
+
+				while (infI > 299)
+					infI -= 299;
+				while (infI < 0)
+					infI = 299 + infI;
+				while (infJ > 299)
+					infJ -= 299;
+				while (infJ < 0)
+					infJ = 299 + infJ;
+
+				int count = liveCellsSurr(infI, infJ);
+				if (grid[infI][infJ]) {
+
+					if (count == 2 | count == 3)
+						g2d.setColor(colorScheme[5]);
+					else if (count < 2)
+						g2d.setColor(colorScheme[2]);
+					else if (count > 3)
+						g2d.setColor(colorScheme[3]);
+					g2d.fillRect(x, y, boxSize, boxSize);
+
+				} else {
+					if (count == 3) {
+						g2d.setColor(colorScheme[4]);
+						g2d.fillRect(x, y, boxSize, boxSize);
+					}
+				}
+
+				g2d.setColor(colorScheme[1]);
+				// Drawing dead cells:
+				g2d.drawRect(x, y, boxSize, boxSize);
+
+				x += boxSize;
+			}
+			x = paddingLeft;
+			y += boxSize;
+		}
+		
+//        }catch(Exception e) {
+//        	System.out.println(e);
+//        }
+
+	}
+
+	// Methods:
+	public void setEditMode(boolean state) {
+		this.editMode = state;
+	}
+
+	public void setGridSize(int size) {
+		this.gridSize = size;
+		repaint();
+	}
+
+	public void nextGen() {
+		boolean[][] newGrid = new boolean[300][300];
+
+		for (int i = 0; i < 300; i++) {
+			for (int j = 0; j < 300; j++) {
+				int surrLiveCells = this.liveCellsSurr(i, j);
+				if (surrLiveCells <= 1)
+					newGrid[i][j] = false;
+				else if (surrLiveCells >= 4 && surrLiveCells <= 8)
+					newGrid[i][j] = false;
+				else if ((surrLiveCells == 2 | surrLiveCells == 3) && grid[i][j])
+					newGrid[i][j] = true;
+				else if (surrLiveCells == 3 && !grid[i][j])
+					newGrid[i][j] = true;
+				else
+					newGrid[i][j] = false;
+			}
+		}
+
+		this.grid = newGrid;
+		repaint();
+	}
+
+	public int liveCellsSurr(int i, int j) {
+		int count = 0;
+		int infI = i, infJ = j;
+
+		while (infI > 299)
+			infI -= 299;
+		while (infI < 0)
+			infI = 299 + infI;
+		while (infJ > 299)
+			infJ -= 299;
+		while (infJ < 0)
+			infJ = 299 + infJ;
+
+		if (infI - 1 >= 0 && infJ - 1 >= 0)
+			if (grid[infI - 1][infJ - 1])
+				count++;
+		if (infI - 1 >= 0)
+			if (grid[infI - 1][infJ])
+				count++;
+		if (infI - 1 >= 0 && infJ + 1 <= 299)
+			if (grid[infI - 1][infJ + 1])
+				count++;
+
+		if (infJ - 1 >= 0)
+			if (grid[infI][infJ - 1])
+				count++;
+		if (infJ + 1 <= 299)
+			if (grid[infI][infJ + 1])
+				count++;
+
+		if (infI + 1 <= 299 && infJ - 1 >= 0)
+			if (grid[infI + 1][infJ - 1])
+				count++;
+		if (infI + 1 <= 299)
+			if (grid[infI + 1][infJ])
+				count++;
+		if (infI + 1 <= 299 && infJ + 1 <= 299)
+			if (grid[infI + 1][infJ + 1])
+				count++;
+
+		return count;
+	}
+
+	public void setColor(Color[] colors) {
+		this.colorScheme = colors;
+		repaint();
+	}
+	
+	public void checkAndEdit(int x,int y) {
+		int i,j;
+		i=(x-paddingTop)/boxSize;
+		j=(y-paddingLeft)/boxSize;
+		int startRow = centerX - (gridSize / 2);
+		int endRow = centerX + (gridSize / 2);
+		int startCol = centerY - (gridSizeHor / 2);
+		int endCol = centerY + (gridSizeHor / 2);
+		
+		int infI = i+startRow, infJ = j+startCol;
+		while (infI > 299)
+			infI -= 299;
+		while (infI < 0)
+			infI = 299 + infI;
+		while (infJ > 299)
+			infJ -= 299;
+		while (infJ < 0)
+			infJ = 299 + infJ;
+		
+		if(grid[infI][infJ]) 
+			grid[infI][infJ] = false;
+		else grid[infI][infJ] = true;
+		
+		repaint();
+	}
+	
+	public void randomizeCells() {
+		Random random = new Random();
+        int randomNumber;
+        
+        for (int i = 0; i < 300; i++) {
+			for (int j = 0; j < 300; j++) {
+				randomNumber = random.nextInt(2);
+				if (randomNumber<=0.5)grid[i][j]=!grid[i][j];
+			}
+		}
+        repaint();
+	}
+	
+	public void addRightClick(RightClickMouseListener rightClick) {
+		this.rightClick=rightClick;
+		
+	}
+
+	public void resetCenter(int x, int y) {
+		centerX = x;
+		centerY = y;
+	}
+
+	
+
+	public void setShape(String s) {
+		shape=s;	
+	}
+}
+
+

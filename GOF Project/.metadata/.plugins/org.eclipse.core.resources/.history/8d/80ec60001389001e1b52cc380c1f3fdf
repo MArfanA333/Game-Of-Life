@@ -1,0 +1,293 @@
+package guiWindow;
+
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Hashtable;
+
+import javax.swing.*;
+
+public class Menu extends JPanel {
+
+	// Menu Items directly on the Menu Bar (Variables):
+	protected JMenuItem openMenuItem = new JMenuItem("Open");
+	protected JMenuItem saveMenuItem = new JMenuItem("Save");
+	protected JMenuItem preferencesMenuItem = new JMenuItem("Preferences");
+	protected JMenuItem exitMenuItem = new JMenuItem("Exit");
+	protected JMenuItem helpMenuItem = new JMenuItem("Help");
+
+	// private JPopupMenu rightClickMenu = new JPopupMenu();
+
+	// Constructor:
+	public Menu() {
+		// Add ActionListeners to the menu items
+		openMenuItem.addActionListener(new Open());
+		saveMenuItem.addActionListener(new Save());
+		preferencesMenuItem.addActionListener(new Preferences());
+		helpMenuItem.addActionListener(new Help());
+		
+
+		exitMenuItem.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// Add logic for exiting the application
+				System.exit(0);
+			}
+		});
+
+
+	}
+
+	public void addToMenuBar(JMenuBar menuBar) {
+		menuBar.add(openMenuItem);
+		menuBar.add(saveMenuItem);
+		menuBar.add(preferencesMenuItem);
+		menuBar.add(helpMenuItem);
+		menuBar.add(exitMenuItem);
+
+	}
+
+	// Method to open a file
+	/*
+	 * private void openFile() { JFileChooser fileChooser = new JFileChooser(); int
+	 * result = fileChooser.showOpenDialog(this);
+	 * 
+	 * if (result == JFileChooser.APPROVE_OPTION) { File selectedFile =
+	 * fileChooser.getSelectedFile(); try (BufferedReader reader = new
+	 * BufferedReader(new FileReader(selectedFile))) { // Process the file content
+	 * as needed JOptionPane.showMessageDialog(null, "File opened successfully"); }
+	 * catch (IOException ex) { ex.printStackTrace();
+	 * JOptionPane.showMessageDialog(null, "Error opening the file"); } } }
+	 */
+
+	// Method to save a file
+	/*
+	 * private void saveFile() { JFileChooser fileChooser = new JFileChooser(); int
+	 * result = fileChooser.showSaveDialog(this);
+	 * 
+	 * if (result == JFileChooser.APPROVE_OPTION) { File selectedFile =
+	 * fileChooser.getSelectedFile(); try (BufferedWriter writer = new
+	 * BufferedWriter(new FileWriter(selectedFile))) { // Write contents to the file
+	 * as needed JOptionPane.showMessageDialog(null, "File saved successfully"); }
+	 * catch (IOException ex) { ex.printStackTrace();
+	 * JOptionPane.showMessageDialog(null, "Error saving the file"); } } }
+	 */
+
+}
+
+class RightClickMouseListener extends MouseAdapter {
+
+	JPopupMenu rightClickMenu = new JPopupMenu();
+	protected JMenuItem openRightClickItem = new JMenuItem("Open");
+	protected JMenuItem saveRightClickItem = new JMenuItem("Save");
+	protected JMenuItem preferencesRightClickItem = new JMenuItem("Preferences");
+	protected JMenuItem helpRightClickItem = new JMenuItem("Help");
+
+	public RightClickMouseListener() {
+		rightClickMenu = new JPopupMenu();
+		rightClickMenu.setPopupSize(200, 100);
+		// rightClickMenu.setVisible(false);
+		openRightClickItem.addActionListener(new Open());
+
+		saveRightClickItem.addActionListener(new Save());
+
+		preferencesRightClickItem.addActionListener(new Preferences());
+
+		helpRightClickItem.addActionListener(new Help());
+
+		rightClickMenu.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					showRightClickMenu(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					showRightClickMenu(e.getComponent(), e.getX(), e.getY());
+				}
+			}
+		});
+
+		addToRightClick();
+	}
+
+	public void addToRightClick() {
+		rightClickMenu.add(openRightClickItem);
+		rightClickMenu.add(saveRightClickItem);
+		rightClickMenu.add(preferencesRightClickItem);
+		rightClickMenu.add(helpRightClickItem);
+	}
+
+	private void showRightClickMenu(Component invoker, int x, int y) {
+		rightClickMenu.setLocation(x, y);
+		rightClickMenu.setVisible(true);
+	}
+
+}
+
+class Open implements ActionListener {
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// Logic for opening a file
+		openFile();
+	}
+
+	private void openFile() {
+		JFileChooser fileChooser = new JFileChooser();
+		int result = fileChooser.showOpenDialog(fileChooser);
+
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = fileChooser.getSelectedFile();
+			try (BufferedReader reader = new BufferedReader(new FileReader(selectedFile))) {
+				// Process the file content as needed
+				JOptionPane.showMessageDialog(null, "File opened successfully");
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Error opening the file");
+			}
+		}
+	}
+}
+
+class Save implements ActionListener {
+
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// TODO Auto-generated method stub
+		saveFile();
+	}
+
+	private void saveFile() {
+		JFileChooser fileChooser = new JFileChooser();
+		int result = fileChooser.showSaveDialog(fileChooser);
+
+		if (result == JFileChooser.APPROVE_OPTION) {
+			File selectedFile = fileChooser.getSelectedFile();
+			try (BufferedWriter writer = new BufferedWriter(new FileWriter(selectedFile))) {
+				// Write contents to the file as needed
+				JOptionPane.showMessageDialog(null, "File saved successfully");
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				JOptionPane.showMessageDialog(null, "Error saving the file");
+			}
+		}
+	}
+
+}
+
+class Preferences implements ActionListener {
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// Create the PreferencesPanel
+		JPanel preferencesPanel = new JPanel(new GridLayout(4, 2)); // 4 rows, 2 columns
+
+		// Combo box for starting pattern
+		JLabel startingPatternLabel = new JLabel("Starting Pattern:");
+		String[] startingPatterns = { "Clear", "Block", "Beacon", "Boat", "Beehive", "Glider", "Pond", "Toad", "Ship",
+				"Tub", "Ship", "Barge", "Long Boat", "Loaf", "Mango", "Long Barge", "Half-Fleet", "Half-Bakery" };
+		JComboBox<String> startingPatternComboBox = new JComboBox<>(startingPatterns);
+
+		// Slider for simulation speed
+		JLabel speedLabel = new JLabel("Simulation Speed:");
+		JSlider speedSlider = new JSlider();
+		speedSlider.setPaintLabels(true);
+		speedSlider.setPaintTicks(true);
+		speedSlider.setMajorTickSpacing(50);
+		speedSlider.setMinorTickSpacing(5);
+		Hashtable<Integer, JLabel> genLabelTable1 = new Hashtable<>();
+		genLabelTable1.put(0, new JLabel("Slow"));
+		genLabelTable1.put(50, new JLabel("Medium"));
+		genLabelTable1.put(100, new JLabel("Fast"));
+		speedSlider.setLabelTable(genLabelTable1);
+
+		// Slider for zoom factor
+		JLabel zoomLabel = new JLabel("Zoom Factor:");
+		JSlider zoomSlider = new JSlider();
+		zoomSlider.setPaintLabels(true);
+		zoomSlider.setPaintTicks(true);
+		zoomSlider.setMajorTickSpacing(50);
+		zoomSlider.setMinorTickSpacing(5);
+		Hashtable<Integer, JLabel> genLabelTable2 = new Hashtable<>();
+		genLabelTable2.put(0, new JLabel("Small"));
+		genLabelTable2.put(50, new JLabel("Medium"));
+		genLabelTable2.put(100, new JLabel("Large"));
+		zoomSlider.setLabelTable(genLabelTable2);
+
+		JCheckBox restoreCheckBox = new JCheckBox("Remember Grid Layout and Restore on Next Start");
+
+		// Add components to preferencesPanel
+		preferencesPanel.add(startingPatternLabel);
+		preferencesPanel.add(startingPatternComboBox);
+		preferencesPanel.add(speedLabel);
+		preferencesPanel.add(speedSlider);
+		preferencesPanel.add(zoomLabel);
+		preferencesPanel.add(zoomSlider);
+		preferencesPanel.add(restoreCheckBox);
+
+		// Show the PreferencesPanel
+		int result = JOptionPane.showConfirmDialog(null, preferencesPanel, "Preferences", JOptionPane.OK_CANCEL_OPTION,
+				JOptionPane.PLAIN_MESSAGE);
+
+		// Handle OK button click
+		if (result == JOptionPane.OK_OPTION) {
+			// Get selected preferences
+			String selectedStartingPattern = (String) startingPatternComboBox.getSelectedItem();
+			int selectedSpeed = speedSlider.getValue();
+			int selectedZoom = zoomSlider.getValue();
+
+		}
+	}
+}
+
+class Help implements ActionListener {
+	@Override
+	public void actionPerformed(ActionEvent e) {
+		// Display the HelpPanel with JTextArea
+		JTextArea helpTextArea = new JTextArea("								       ABOUT THE GAME\n\n"
+				+ "The Game of Life is probably the most famous example of cellular automata, "
+				+ "which are computer simulations inspired by biological cells. The game was "
+				+ "invented by Cambridge’s mathematician John Conway, and popularized by "
+				+ "fellow mathematician and popular science writer Martin Gardner in a Scientific "
+				+ "American article in 1970. For further information, a number of references about "
+				+ "the Game of Life (or, simply, Life) are provided at the end of this document.\n\n" +
+
+				"The Game of Life consists of a 2-dimensional grid of square cells which, based "
+				+ "on simple rules, can live, reproduce, or die. Depending on initial conditions, the "
+				+ "cells may form various interesting patterns throughout the course of the game.\n\n" +
+
+				"Thus, Life is not a game is the traditional sense (i.e., there is no winner or loser) "
+				+ "but more a game of exploration where one may observe, and even try to predict, "
+				+ "how a cell population will evolve, also to discover new patterns of interest, etc.\n\n" +
+
+				"								     RULES OF THE GAME\n\n" +
+
+				"It is played on a 2D grid that extends infinitely " + "in every direction. "
+				+ "Every cell in the grid is either live (“populated”) or dead (“empty”). A live cell "
+				+ "with 0 or 1 neighbor dies (“starvation”), a live cell with 4 to 8 neighbors dies "
+				+ " (“overpopulation”), but a live cell with 2 or 3 neighbors survives. Conversely, a "
+				+ "dead cell with exactly 3 neighbors becomes alive (“reproduction”). In all other "
+				+ "cases, a dead cell remains dead (“starvation” or “overpopulation”).");
+
+		helpTextArea.setEditable(false);
+		helpTextArea.setLineWrap(true);
+		helpTextArea.setWrapStyleWord(true);
+
+		JScrollPane scrollPane = new JScrollPane(helpTextArea);
+		scrollPane.setPreferredSize(new Dimension(500, 450));
+
+		JOptionPane.showMessageDialog(null, scrollPane, "Help", JOptionPane.PLAIN_MESSAGE);
+	}
+}
